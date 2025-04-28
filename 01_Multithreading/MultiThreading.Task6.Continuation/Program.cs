@@ -7,6 +7,8 @@
    Demonstrate the work of the each case with console utility.
 */
 using System;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace MultiThreading.Task6.Continuation
 {
@@ -22,8 +24,73 @@ namespace MultiThreading.Task6.Continuation
             Console.WriteLine("Demonstrate the work of the each case with console utility.");
             Console.WriteLine();
 
-            // feel free to add your code
+            var cts = new CancellationTokenSource();
 
+            var parent = Task.Run(() =>
+            {
+                Console.WriteLine($"Parent task started on Thread {Thread.CurrentThread.ManagedThreadId}");
+                // Uncomment one of these lines to simulate different outcomes:
+
+                // Success
+                // Console.WriteLine("Parent completed successfully.");
+
+                // Failure
+                // throw new Exception("Simulated failure.");
+
+                // Cancellation
+                cts.Token.ThrowIfCancellationRequested();
+            }, cts.Token);
+
+            // a. Continue regardless
+            var continueRegardless = parent.ContinueWith(t =>
+            {
+                Console.WriteLine($"[Case 1] Continue Regardless on Thread {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"Parent Status: {t.Status}");
+            }, TaskContinuationOptions.None);
+
+            // b. Continue when parent completed without success
+            var continueOnNotSuccess = parent.ContinueWith(t =>
+            {
+                Console.WriteLine($"[Case 2] Continue if Not Success on Thread {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"Parent Status: {t.Status}");
+            }, TaskContinuationOptions.NotOnRanToCompletion);
+
+            // c. Continue on failure and reuse parent thread
+            var continueOnFailureReuseThread = parent.ContinueWith(t =>
+            {
+                Console.WriteLine($"[Case 3] Continue on Failure (Reuse Thread) on Thread {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"Parent Status: {t.Status}");
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+            // d. Continue on cancellation outside thread pool
+            var continueOnCanceledOutsideThreadPool = parent.ContinueWith(t =>
+            {
+                Console.WriteLine($"[Case 4] Continue on Cancellation (LongRunning) on Thread {Thread.CurrentThread.ManagedThreadId}");
+                Console.WriteLine($"Parent Status: {t.Status}");
+            },
+            CancellationToken.None,
+            TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.LongRunning,
+            TaskScheduler.Default);
+
+            // Simulate cancellation
+            // cts.Cancel();
+
+            try
+            {
+                Task.WaitAll(continueRegardless, continueOnNotSuccess, continueOnFailureReuseThread, continueOnCanceledOutsideThreadPool);
+            }
+            catch (AggregateException ex)
+            {
+                foreach (var inner in ex.InnerExceptions)
+                {
+                    Console.WriteLine($"Exception: {inner.Message}");
+                }
+            }
+
+            Console.WriteLine("\nAll continuations finished. Press any key to exit...");
             Console.ReadLine();
         }
     }
