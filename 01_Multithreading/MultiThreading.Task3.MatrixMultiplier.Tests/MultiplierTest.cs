@@ -18,8 +18,39 @@ namespace MultiThreading.Task3.MatrixMultiplier.Tests
         [TestMethod]
         public void ParallelEfficiencyTest()
         {
-            // todo: implement a test method to check the size of the matrix which makes parallel multiplication more effective than
-            // todo: the regular one
+            IMatricesMultiplier normalMultiplier = new MatricesMultiplier();
+            IMatricesMultiplier parallelMultiplier = new MatricesMultiplierParallel();
+
+            int size = 10;
+            bool isFound = false;
+
+            while (size <= 1000)
+            {
+                var firstMatrix = new Matrix(size, size);
+                var secondMatrix = new Matrix(size, size);
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                normalMultiplier.Multiply(firstMatrix, secondMatrix);
+                sw.Stop();
+                double normalTime = sw.Elapsed.TotalMilliseconds;
+
+                sw.Restart();
+                parallelMultiplier.Multiply(firstMatrix, secondMatrix);
+                sw.Stop();
+                double parallelTime = sw.Elapsed.TotalMilliseconds;
+
+                Console.WriteLine($"\nSize {size}x{size}: \nNormal = {normalTime}ms\nParallel = {parallelTime}ms");
+
+                if (parallelTime < normalTime)
+                {
+                    Console.WriteLine($"Parallel multiplication became faster at size {size}x{size}");
+                    isFound = true;
+                    break;
+                }
+
+                size += 10;
+            }
+            Assert.IsTrue(isFound);
         }
 
         #region private methods
