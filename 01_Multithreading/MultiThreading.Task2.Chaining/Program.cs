@@ -6,6 +6,8 @@
  * Fourth Task – calculates the average value. All this tasks should print the values to console.
  */
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MultiThreading.Task2.Chaining
 {
@@ -21,7 +23,51 @@ namespace MultiThreading.Task2.Chaining
             Console.WriteLine("Fourth Task – calculates the average value. All this tasks should print the values to console");
             Console.WriteLine();
 
-            // feel free to add your code
+
+            var taskChain = Task.Run(CreateRandomArray)
+                            .ContinueWith(n1 => MultiplyArray(n1.Result))
+                            .ContinueWith(n2 => SortArrayByAscending(n2.Result))
+                            .ContinueWith(n3 => GetAverage(n3.Result));
+
+            taskChain.Wait();
+
+            static int[] CreateRandomArray()
+            {
+                Random rnd = new Random();
+
+                int[] numbers = Enumerable.Range(0, 10)
+                                  .Select(_ => rnd.Next(1, 101))
+                                  .ToArray();
+
+                Console.WriteLine("Initial list of numbers:");
+                Console.WriteLine(string.Join(", ", numbers));
+                return numbers;
+            }
+
+            static int[] MultiplyArray(int[] numbers)
+            {
+                int multiplier = new Random().Next(1, 10);
+                numbers = numbers.Select(n => n * multiplier).ToArray();
+                Console.WriteLine($"\nMultiplied by {multiplier}:");
+                Console.WriteLine(String.Join(", ", numbers));
+                return numbers;
+            }
+
+            static int[] SortArrayByAscending(int[] numbers)
+            {
+                numbers = numbers.OrderBy(n => n).ToArray();
+                Console.WriteLine("\nSorted by ascending:");
+                Console.WriteLine(String.Join(", ", numbers));
+                return numbers;
+            }
+
+            static double GetAverage(int[] numbers)
+            {
+                double avg = numbers.Average();
+                Console.WriteLine($"\nAverage:");
+                Console.WriteLine(avg);
+                return avg;
+            }
 
             Console.ReadLine();
         }
