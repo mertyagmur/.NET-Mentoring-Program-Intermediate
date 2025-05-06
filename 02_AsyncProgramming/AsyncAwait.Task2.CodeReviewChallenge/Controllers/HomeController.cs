@@ -27,13 +27,13 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Privacy()
     {
-        ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync().ConfigureAwait(false);
+        ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync();
         return View();
     }
 
     public async Task<IActionResult> Help()
     {
-        ViewBag.RequestInfo = await _assistant.RequestAssistanceAsync("guest").ConfigureAwait(false);
+        ViewBag.RequestInfo = await _assistant.RequestAssistanceAsync("guest");
         return View();
     }
 
