@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using AsyncAwait.Task2.CodeReviewChallenge.Models;
 using AsyncAwait.Task2.CodeReviewChallenge.Models.Support;
@@ -25,9 +26,9 @@ public class HomeController : Controller
         return View();
     }
 
-    public async Task<IActionResult> Privacy()
+    public async Task<IActionResult> Privacy(CancellationToken cancellationToken)
     {
-        ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync();
+        ViewBag.Message = await _privacyDataService.GetPrivacyDataAsync(cancellationToken);
         return View();
     }
 
