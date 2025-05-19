@@ -13,52 +13,52 @@ namespace ProfileSample.Controllers
     {
         public ActionResult Index()
         {
-            var context = new ProfileSampleEntities();
-
-            var sources = context.ImgSources.Take(20).Select(x => x.Id);
-            
-            var model = new List<ImageModel>();
-
-            foreach (var id in sources)
+            using (var context = new ProfileSampleEntities())
             {
-                var item = context.ImgSources.Find(id);
+                var model = context.ImgSources
+                    .Take(20)
+                    .Select(x => new ImageModel
+                    {
+                        Name = x.Name,
+                        Data = x.Data
+                    })
+                    .ToList();
 
-                var obj = new ImageModel()
-                {
-                    Name = item.Name,
-                    Data = item.Data
-                };
-
-                model.Add(obj);
-            } 
-
-            return View(model);
+                return View(model);
+            }
         }
 
         public ActionResult Convert()
         {
             var files = Directory.GetFiles(Server.MapPath("~/Content/Img"), "*.jpg");
+            const int bufferSize = 81920;
 
             using (var context = new ProfileSampleEntities())
             {
                 foreach (var file in files)
                 {
-                    using (var stream = new FileStream(file, FileMode.Open))
+                    using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read))
                     {
-                        byte[] buff = new byte[stream.Length];
-
-                        stream.Read(buff, 0, (int) stream.Length);
-
-                        var entity = new ImgSource()
+                        var entity = new ImgSource
                         {
                             Name = Path.GetFileName(file),
-                            Data = buff,
+                            Data = new byte[stream.Length]
                         };
 
+                        int bytesRead;
+                        int totalBytesRead = 0;
+                        var buffer = new byte[bufferSize];
+
+                        while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            Buffer.BlockCopy(buffer, 0, entity.Data, totalBytesRead, bytesRead);
+                            totalBytesRead += bytesRead;
+                        }
+
                         context.ImgSources.Add(entity);
-                        context.SaveChanges();
                     }
-                } 
+                }
+                context.SaveChanges();
             }
 
             return RedirectToAction("Index");
