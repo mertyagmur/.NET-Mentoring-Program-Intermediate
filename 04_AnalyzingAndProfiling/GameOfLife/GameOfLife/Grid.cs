@@ -37,6 +37,7 @@ namespace GameOfLife
                 }
 
             SetRandomPattern();
+            ClearVisuals();
             InitCellsVisuals();
             UpdateGraphics();
             
@@ -45,13 +46,19 @@ namespace GameOfLife
 
         public void Clear()
         {
+            ClearVisuals();
+
+            cellsVisuals = new Ellipse[SizeX, SizeY];
+
             for (int i = 0; i < SizeX; i++)
                 for (int j = 0; j < SizeY; j++)
                 {
                     cells[i, j] = new Cell(i, j, 0, false);
                     nextGenerationCells[i, j] = new Cell(i, j, 0, false);
-                    cellsVisuals[i, j].Fill = Brushes.Gray;
                 }
+
+            InitCellsVisuals();
+            UpdateGraphics();
         }
 
 
@@ -78,9 +85,14 @@ namespace GameOfLife
         {
             for (int i = 0; i < SizeX; i++)
                 for (int j = 0; j < SizeY; j++)
-                    cellsVisuals[i, j].Fill = cells[i, j].IsAlive
-                                                  ? (cells[i, j].Age < 2 ? Brushes.White : Brushes.DarkGray)
-                                                  : Brushes.Gray;
+                {
+                    if (cellsVisuals[i, j] != null)
+                    {
+                        cellsVisuals[i, j].Fill = cells[i, j].IsAlive
+                                                      ? (cells[i, j].Age < 2 ? Brushes.White : Brushes.DarkGray)
+                                                      : Brushes.Gray;
+                    }
+                }
         }
 
         public void InitCellsVisuals()
@@ -88,13 +100,22 @@ namespace GameOfLife
             for (int i = 0; i < SizeX; i++)
                 for (int j = 0; j < SizeY; j++)
                 {
-                    cellsVisuals[i, j] = new Ellipse();
+                    if (cellsVisuals[i, j] == null)
+                    {
+                        cellsVisuals[i, j] = new Ellipse();
+                    }
                     cellsVisuals[i, j].Width = cellsVisuals[i, j].Height = 5;
                     double left = cells[i, j].PositionX;
                     double top = cells[i, j].PositionY;
                     cellsVisuals[i, j].Margin = new Thickness(left, top, 0, 0);
                     cellsVisuals[i, j].Fill = Brushes.Gray;
-                    drawCanvas.Children.Add(cellsVisuals[i, j]);
+                    if (!drawCanvas.Children.Contains(cellsVisuals[i, j]))
+                    {
+                        drawCanvas.Children.Add(cellsVisuals[i, j]);
+                    }
+
+                    cellsVisuals[i, j].MouseMove -= MouseMove;
+                    cellsVisuals[i, j].MouseLeftButtonDown -= MouseMove;
 
                     cellsVisuals[i, j].MouseMove += MouseMove;
                     cellsVisuals[i, j].MouseLeftButtonDown += MouseMove;
@@ -193,6 +214,26 @@ namespace GameOfLife
             if (i != SizeX - 1 && j != 0 && cells[i + 1, j - 1].IsAlive) count++;
 
             return count;
+        }
+
+        private void ClearVisuals()
+        {
+            if (cellsVisuals != null)
+            {
+                for (int i = 0; i < SizeX; i++)
+                {
+                    for (int j = 0; j < SizeY; j++)
+                    {
+                        if (cellsVisuals[i, j] != null)
+                        {
+                            drawCanvas.Children.Remove(cellsVisuals[i, j]);
+                            cellsVisuals[i, j].MouseMove -= MouseMove;
+                            cellsVisuals[i, j].MouseLeftButtonDown -= MouseMove;
+                            cellsVisuals[i, j] = null;
+                        }
+                    }
+                }
+            }
         }
     }
 }
