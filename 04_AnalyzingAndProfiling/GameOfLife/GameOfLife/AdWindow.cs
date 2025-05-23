@@ -45,13 +45,20 @@ namespace GameOfLife
         
         protected override void OnClosed(EventArgs e)
         {
-            //Unsubscribe();
+            Unsubscribe();
             base.OnClosed(e);
         } 
 
         public void Unsubscribe()
         {
             adTimer.Tick -= ChangeAds;
+            {
+                if (adTimer != null)
+                {
+                    adTimer.Tick -= ChangeAds;
+                    adTimer.Stop();
+                }
+            }
         }
 
         private void ChangeAds(object sender, EventArgs eventArgs)
