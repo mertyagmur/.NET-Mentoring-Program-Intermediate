@@ -33,6 +33,59 @@ namespace Expressions.Task3.E3SQueryProvider
 
                 return node;
             }
+
+            if (node.Method.DeclaringType == typeof(string) && node.Method.Name == "Equals")
+            {
+                if (node.Object?.NodeType == ExpressionType.MemberAccess && node.Arguments[0]?.NodeType == ExpressionType.Constant)
+                {
+                    Visit(node.Object);
+                    _resultStringBuilder.Append("(");
+                    Visit(node.Arguments[0]);
+                    _resultStringBuilder.Append(")");
+
+                    return node;
+                }
+            }
+
+            if (node.Method.DeclaringType == typeof(string) && node.Method.Name == "Contains")
+            {
+                if (node.Object?.NodeType == ExpressionType.MemberAccess && node.Arguments[0]?.NodeType == ExpressionType.Constant)
+                {
+                    Visit(node.Object);
+                    _resultStringBuilder.Append("(*");
+                    Visit(node.Arguments[0]);
+                    _resultStringBuilder.Append("*)");
+
+                    return node;
+                }
+            }
+
+            if (node.Method.DeclaringType == typeof(string) && node.Method.Name == "StartsWith")
+            {
+                if (node.Object?.NodeType == ExpressionType.MemberAccess && node.Arguments[0]?.NodeType == ExpressionType.Constant)
+                {
+                    Visit(node.Object);
+                    _resultStringBuilder.Append("(");
+                    Visit(node.Arguments[0]);
+                    _resultStringBuilder.Append("*)");
+
+                    return node;
+                }
+            }
+
+            if (node.Method.DeclaringType == typeof(string) && node.Method.Name == "EndsWith")
+            {
+                if (node.Object?.NodeType == ExpressionType.MemberAccess && node.Arguments[0]?.NodeType == ExpressionType.Constant)
+                {
+                    Visit(node.Object);
+                    _resultStringBuilder.Append("(*");
+                    Visit(node.Arguments[0]);
+                    _resultStringBuilder.Append(")");
+
+                    return node;
+                }
+            }
+
             return base.VisitMethodCall(node);
         }
 
@@ -41,15 +94,31 @@ namespace Expressions.Task3.E3SQueryProvider
             switch (node.NodeType)
             {
                 case ExpressionType.Equal:
-                    if (node.Left.NodeType != ExpressionType.MemberAccess)
-                        throw new NotSupportedException($"Left operand should be property or field: {node.NodeType}");
+                    Expression memberAccessNode = null;
+                    Expression constantNode = null;
 
-                    if (node.Right.NodeType != ExpressionType.Constant)
-                        throw new NotSupportedException($"Right operand should be constant: {node.NodeType}");
+                    if (node.Left.NodeType == ExpressionType.MemberAccess && node.Right.NodeType == ExpressionType.Constant)
+                    {
+                        memberAccessNode = node.Left;
+                        constantNode = node.Right;
+                    }
+                    else if (node.Left.NodeType == ExpressionType.Constant && node.Right.NodeType == ExpressionType.MemberAccess)
+                    {
+                        memberAccessNode = node.Right;
+                        constantNode = node.Left;
+                    }
+                    else
+                    {
+                        if (node.Left.NodeType != ExpressionType.MemberAccess && node.Right.NodeType != ExpressionType.MemberAccess)
+                        {
+                            throw new NotSupportedException($"One of the operands should be property or field: {node.Left.NodeType}, {node.Right.NodeType}");
+                        }
+                        throw new NotSupportedException($"One of the operands should be constant: {node.Left.NodeType}, {node.Right.NodeType}");
+                    }
 
-                    Visit(node.Left);
+                    Visit(memberAccessNode);
                     _resultStringBuilder.Append("(");
-                    Visit(node.Right);
+                    Visit(constantNode);
                     _resultStringBuilder.Append(")");
                     break;
 
