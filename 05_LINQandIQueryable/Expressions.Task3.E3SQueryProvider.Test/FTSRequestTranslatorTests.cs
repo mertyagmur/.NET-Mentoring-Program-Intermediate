@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Expressions.Task3.E3SQueryProvider.Models.Entities;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Expressions.Task3.E3SQueryProvider.Test
 {
@@ -17,8 +18,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => "EPRUIZHW006" == employee.Workstation;
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(EPRUIZHW006)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(EPRUIZHW006)", translatedQueries[0]);
         }
 
         #endregion
@@ -32,8 +35,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<IQueryable<EmployeeEntity>, IQueryable<EmployeeEntity>>> expression
                 = query => query.Where(e => e.Workstation == "EPRUIZHW006");
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(EPRUIZHW006)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(EPRUIZHW006)", translatedQueries[0]);
         }
 
         [Fact]
@@ -43,8 +48,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => employee.Workstation == "EPRUIZHW006";
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(EPRUIZHW006)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(EPRUIZHW006)", translatedQueries[0]);
         }
 
         [Fact]
@@ -54,8 +61,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => employee.Workstation.Equals("EPRUIZHW006");
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(EPRUIZHW006)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(EPRUIZHW006)", translatedQueries[0]);
         }
 
         [Fact]
@@ -65,8 +74,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => employee.Workstation.StartsWith("EPRUIZHW006");
             
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(EPRUIZHW006*)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(EPRUIZHW006*)", translatedQueries[0]);
         }
 
         [Fact]
@@ -76,8 +87,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => employee.Workstation.EndsWith("IZHW0060");
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(*IZHW0060)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(*IZHW0060)", translatedQueries[0]);
         }
 
         [Fact]
@@ -87,8 +100,10 @@ namespace Expressions.Task3.E3SQueryProvider.Test
             Expression<Func<EmployeeEntity, bool>> expression
                 = employee => employee.Workstation.Contains("IZHW006");
 
-            string translated = translator.Translate(expression);
-            Assert.Equal("Workstation:(*IZHW006*)", translated);
+            List<string> translatedQueries = translator.Translate(expression);
+            Assert.NotNull(translatedQueries);
+            Assert.Single(translatedQueries);
+            Assert.Equal("Workstation:(*IZHW006*)", translatedQueries[0]);
         }
 
         #endregion

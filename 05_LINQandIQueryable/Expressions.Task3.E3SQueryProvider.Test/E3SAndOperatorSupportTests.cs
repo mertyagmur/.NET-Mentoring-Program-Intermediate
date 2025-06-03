@@ -12,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Expressions.Task3.E3SQueryProvider.Models.Entities;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Expressions.Task3.E3SQueryProvider.Test
 {
@@ -23,19 +24,47 @@ namespace Expressions.Task3.E3SQueryProvider.Test
         public void TestAndQueryable()
         {
             var translator = new ExpressionToFtsRequestTranslator();
-            Expression<Func<IQueryable<EmployeeEntity>, IQueryable<EmployeeEntity>>> expression
-                = query => query.Where(e => e.Workstation == "EPRUIZHW006" && e.Manager.StartsWith("John"));
-            /*
-             * The expression above should be converted to the following FTSQueryRequest and then serialized inside FTSRequestGenerator:
-             * "statements": [
-                { "query":"Workstation:(EPRUIZHW006)"},
-                { "query":"Manager:(John*)"}
-                // Operator between queries is AND, in other words result set will fit to both statements above
-              ],
-             */
+            ParameterExpression eParam = Expression.Parameter(typeof(EmployeeEntity), "e");
 
-            // todo: create asserts for this test by yourself, because they will depend on your final implementation
-            throw new NotImplementedException("Please implement this test and the appropriate functionality");
+            // e.Workstation
+            MemberExpression workstationMember = Expression.Property(eParam, "Workstation");
+            // "EPRUIZHW006"
+            ConstantExpression workstationValue = Expression.Constant("EPRUIZHW006");
+            // e.Workstation == "EPRUIZHW006"
+            BinaryExpression condition1 = Expression.Equal(workstationMember, workstationValue);
+
+            // e.Manager
+            MemberExpression managerMember = Expression.Property(eParam, "Manager");
+            // "John"
+            ConstantExpression managerValue = Expression.Constant("John");
+            // e.Manager.StartsWith("John")
+            MethodCallExpression condition2 = Expression.Call(
+                managerMember, 
+                typeof(string).GetMethod("StartsWith", new[] { typeof(string) }), 
+                managerValue
+            );
+
+            BinaryExpression andExpression = Expression.AndAlso(condition1, condition2);
+
+            LambdaExpression predicateLambda = Expression.Lambda<Func<EmployeeEntity, bool>>(andExpression, eParam);
+           
+            var queryableSource = new List<EmployeeEntity>().AsQueryable();
+            
+            MethodCallExpression whereCallExpression = Expression.Call(
+                typeof(Queryable),
+                "Where",
+                new Type[] { typeof(EmployeeEntity) },
+                queryableSource.Expression, 
+                predicateLambda
+            );
+
+            List<string> result = translator.Translate(whereCallExpression);
+
+            // Assertions
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains("Workstation:(EPRUIZHW006)", result);
+            Assert.Contains("Manager:(John*)", result);
         }
 
         #endregion
