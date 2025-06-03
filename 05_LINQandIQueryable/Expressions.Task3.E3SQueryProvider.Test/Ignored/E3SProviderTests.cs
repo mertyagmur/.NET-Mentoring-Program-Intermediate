@@ -44,38 +44,38 @@ namespace Expressions.Task3.E3SQueryProvider.Test.Ignored
 
         #region public tests
 
-        [Fact(Skip = "This test is provided to show the general idea of usage.")]
-        public void WithoutProvider()
-        {
-            IEnumerable<EmployeeEntity> res = searchService.Value.SearchFts<EmployeeEntity>("workstation:(EPRUIZHW0249)", 0, 1);
+        //[Fact(Skip = "This test is provided to show the general idea of usage.")]
+        //public void WithoutProvider()
+        //{
+        //    IEnumerable<EmployeeEntity> res = searchService.Value.SearchFts<EmployeeEntity>("workstation:(EPRUIZHW0249)", 0, 1);
 
-            foreach (var emp in res)
-            {
-                _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
-            }
-        }
+        //    foreach (var emp in res)
+        //    {
+        //        _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
+        //    }
+        //}
 
-        [Fact(Skip = "This test is provided to show the general idea of usage.")]
-        public void WithoutProviderNonGeneric()
-        {
-            var res = searchService.Value.SearchFts(typeof(EmployeeEntity), "workstation:(EPRUIZHW0249)", 0, 10);
+        //[Fact(Skip = "This test is provided to show the general idea of usage.")]
+        //public void WithoutProviderNonGeneric()
+        //{
+        //    var res = searchService.Value.SearchFts(typeof(EmployeeEntity), "workstation:(EPRUIZHW0249)", 0, 10);
 
-            foreach (var emp in res.OfType<EmployeeEntity>())
-            {
-                _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
-            }
-        }
+        //    foreach (var emp in res.OfType<EmployeeEntity>())
+        //    {
+        //        _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
+        //    }
+        //}
 
-        [Fact(Skip = "This test is provided to show the general idea of usage.")]
-        public void WithProvider()
-        {
-            var employees = new E3SEntitySet<EmployeeEntity>(searchService.Value);
+        //[Fact(Skip = "This test is provided to show the general idea of usage.")]
+        //public void WithProvider()
+        //{
+        //    var employees = new E3SEntitySet<EmployeeEntity>(searchService.Value);
 
-            foreach (var emp in employees.Where(e => e.Workstation == "EPRUIZHW0249"))
-            {
-                _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
-            }
-        }
+        //    foreach (var emp in employees.Where(e => e.Workstation == "EPRUIZHW0249"))
+        //    {
+        //        _testOutputHelper.WriteLine("{0} {1}", emp.NativeName, emp.StartWorkDate);
+        //    }
+        //}
 
         #endregion
     }

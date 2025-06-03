@@ -26,18 +26,18 @@ namespace Expressions.Task3.E3SQueryProvider.Services
 
         #region public methods
 
-        public IEnumerable<T> SearchFts<T>(string query, int start = 0, int limit = 0) where T : BaseE3SEntity
+        public IEnumerable<T> SearchFts<T>(List<string> queries, int start = 0, int limit = 0) where T : BaseE3SEntity
         {
             var requestGenerator = new FtsRequestGenerator(_baseAddress);
 
-            Uri request = requestGenerator.GenerateRequestUrl<T>(query, start, limit);
+            Uri request = requestGenerator.GenerateRequestUrl<T>(queries, start, limit);
 
             string resultString = _httpClient.GetStringAsync(request).Result;
 
             return JsonConvert.DeserializeObject<FtsResponse<T>>(resultString).Items.Select(t => t.Data);
         }
         
-        public IEnumerable SearchFts(Type type, string query, int start = 0, int limit = 0)
+        public IEnumerable SearchFts(Type type, List<string> queries, int start = 0, int limit = 0)
         {
             Type finalType = typeof(FtsResponse<>).MakeGenericType(type);
             if (finalType == null)
@@ -51,7 +51,7 @@ namespace Expressions.Task3.E3SQueryProvider.Services
             }
 
             var requestGenerator = new FtsRequestGenerator(_baseAddress);
-            Uri request = requestGenerator.GenerateRequestUrl(type, query, start, limit);
+            Uri request = requestGenerator.GenerateRequestUrl(type, queries, start, limit);
 
             string resultString = _httpClient.GetStringAsync(request).Result;
 

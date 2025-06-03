@@ -1,6 +1,7 @@
 ﻿using Expressions.Task3.E3SQueryProvider.Helpers;
 using Expressions.Task3.E3SQueryProvider.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -8,11 +9,11 @@ namespace Expressions.Task3.E3SQueryProvider.QueryProvider
 {
     public class E3SLinqProvider : IQueryProvider
     {
-        private readonly E3SSearchService _e3SClient;
+        private readonly IE3SSearchService _e3sClient;
 
-        public E3SLinqProvider(E3SSearchService client)
+        public E3SLinqProvider(IE3SSearchService client)
         {
-            _e3SClient = client;
+            _e3sClient = client;
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -27,7 +28,11 @@ namespace Expressions.Task3.E3SQueryProvider.QueryProvider
 
         public object Execute(Expression expression)
         {
-            throw new NotImplementedException();
+            Type itemType = TypeHelper.GetElementType(expression.Type);
+            var translator = new ExpressionToFtsRequestTranslator();
+            List<string> queryStrings = translator.Translate(expression);
+
+            return _e3sClient.SearchFts(itemType, queryStrings);
         }
 
         public TResult Execute<TResult>(Expression expression)
@@ -35,9 +40,9 @@ namespace Expressions.Task3.E3SQueryProvider.QueryProvider
             Type itemType = TypeHelper.GetElementType(expression.Type);
 
             var translator = new ExpressionToFtsRequestTranslator();
-            string queryString = translator.Translate(expression);
-
-            return (TResult)_e3SClient.SearchFts(itemType, queryString);
+            List<string> queryStrings = translator.Translate(expression);
+            
+            return (TResult)_e3sClient.SearchFts(itemType, queryStrings);
         }
     }
 }
